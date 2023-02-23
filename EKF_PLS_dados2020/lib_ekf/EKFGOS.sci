@@ -4,15 +4,11 @@ function  EKFGOS(C,cname,texp,t,xinf0)
     exec('lib_ekf/ctegamma.sci');
     exec('lib_ekf/eqdif.sci');
     exec('lib_ekf/vel.sci');
-         
-    //Vetor de massa molar para 9 espécies, ultimo elemento é pra acertar a dimensão da matriz ao usar repmat.
-    
-    
+             
     selecao = [2,3,4] // seleciona quais espécies mostrar nos gráficos
     especies= ['Lac','Glu','Gal','Glb','Tri','Trig','Tet','Tetg','Et']
 
     [yteo,xmod,x0,H,u,MM,MMy] = modelocin(0,0,t,xinf0) 
-
     
      yexp = C //saidas medidas, Xinferido PLS
     

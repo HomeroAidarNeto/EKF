@@ -30,8 +30,6 @@ clc; clear ; for i = 1:100; close ; end;
 
 exec('lib_multi/func_infer_ILS.sci');
 exec('lib_multi/func_multi_ILS_new.sci');
-exec('lib_ekf/EKFGOS.sci');
-exec('lib_ekf/EKFGOS2.sci');
 exec('lib_ekf/EKFGOS3.sci');
 exec('lib_ekf/modelocin.sci');
 exec('lib_ekf/pretrat.sci');
@@ -272,4 +270,4 @@ absor0 = [absorlendo(1,:);absor0]
 
 pause
 for i = 1:100; close; end;
-EKFGOS3(Absorexp,cname,texp,t,klb2,sigy,lambda,x0) 
+EKFGOS3(Absorexp,cname,texp,t,klb2,sigy,lambda,xinf0) 

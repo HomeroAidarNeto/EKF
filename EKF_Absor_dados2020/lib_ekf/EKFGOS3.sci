@@ -5,16 +5,13 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
     exec('lib_ekf/eqdif.sci');
     exec('lib_ekf/vel.sci');
         
-    //Vetor de massa molar para 9 espécies, ultimo elemento é pra acertar a dimensão da matriz ao usar repmat.
-    MM = [2*180-18, 180, 180, 2*180-18,3*180-2*18,3*180-2*18,4*180-3*18,4*180-3*18,9e+4,1]
-    MMy= [MM(4),MM(2),MM(3),(MM(5)+MM(6))/2,(MM(7)+MM(8))/2]
-    
     selecao = [2,3,4] // seleciona quais espécies mostrar nos gráficos
     especies= ['Lac','Glu','Gal','Glb','Tri','Trig','Tet','Tetg','Et']
 
-    [yteo,xmod,x0,Hant,u] = modelocin(0,0,t)
-    concteo = yteo
-    xmodM= xmod.*repmat(MM,length(t),1) //converte de mol/L pra g/L
+//    [yteo,xmod,x0,Hant,u] = modelocin(0,0,t)
+    [concteo,xmod,x0,Hant,u,MM,MMy] = modelocin(0,0,t,xinf0)
+    yexp = Absor //saidas medidas
+ 
     // plot conc molar
     scf(1)
     plot(t,xmod(:,1:$-1))
@@ -36,45 +33,62 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
     ylabel("V (L)", "fontsize", 4);
     legend(['V'])
     title('Volume no reator x tempo')
-    
-    // plot conc massica
-    scf(4)
-    plot(t,xmodM(:,1:$-1))
-    xlabel("t (min)", "fontsize", 4);
-    ylabel("C (g/L)", "fontsize", 4);
-    legend(['Lac','Glu','Gal','Glb','Tri','Trig','Tet','Tetg','Et'])
-    title('Mássica x tempo - todas as espécies')
-    
-    scf(5)
-    plot(t,xmodM(:,selecao))
-    xlabel("t (min)", "fontsize", 4);
-    ylabel("C (g/L)", "fontsize", 4);
-    legend(especies(selecao))
-    title('Mássica x tempo - seleção')
-    
-    scf(7)
-    plot(t,xmod(:,$-1))
-    xlabel("t (min)", "fontsize", 4);
-    ylabel("C (g/L)", "fontsize", 4);
-    legend("Enzima")
-    title('Molar x tempo - seleção')
  
+ 
+    xmodM= xmod.*repmat(MM,length(t),1) //converte de mol/L pra g/L  
+    //    yexpM = yexp.*repmat(MMy,length(texp),1) 
+    // plot conc massica
+//    scf(4)
+//    plot(t,xmodM(:,1:$-1))
+//    xlabel("t (min)", "fontsize", 4);
+//    ylabel("C (g/L)", "fontsize", 4);
+//    legend(['Lac','Glu','Gal','Glb','Tri','Trig','Tet','Tetg','Et'])
+//    title('Mássica x tempo - todas as espécies')
+//    
+//    scf(5)
+//    plot(t,xmodM(:,selecao))
+//    xlabel("t (min)", "fontsize", 4);
+//    ylabel("C (g/L)", "fontsize", 4);
+//    legend(especies(selecao))
+//    title('Mássica x tempo - seleção')
+//    
+//    scf(7)
+//    plot(t,xmod(:,$-1))
+//    xlabel("t (min)", "fontsize", 4);
+//    ylabel("C (g/L)", "fontsize", 4);
+//    legend("Enzima")
+//    title('Molar x tempo - seleção')
 
-    yexp = Absor //saidas medidas
-    
-    
-//    yexpM = yexp.*repmat(MMy,length(texp),1)
 //    scf(4)
 //    plot(texp,yexpM,'o')
 //    scf(5)
 //    plot(texp,yexpM(:,selecao),'o')
+
+    yexp = yexp'  //y nlamb x ntexp
+    H = klb'*Hant
+    yteo = H*xmod'//y nlamb x nt
+
+//Plots para comparar dados do modelo com experimentais
+    scf(10); plot(yexp,yteo(:,2:$)) //dimensao 600 x 601
+        xlabel("Absorb exp HPLC", "fontsize", 4);
+        ylabel("Absorb teorica", "fontsize", 4);
+        title('Abs x Abs')
+        
+    scf(6); plot(texp,concexp,'o')
+    scf(6); plot(t,concteo)
+        xlabel("t (min)", "fontsize", 4);
+        ylabel("C (mol/L)", "fontsize", 4);
+        legend(cname)
+        title('C Molar x tempo, teorico e exp')
     
+//Variáveis auxiliares    
     mr = size(xmod,'r') // número de pontos de dados
     mexp = size(yexp,'r') // número de pontos experimentais
     nx = size(x0,'r') //número de variáveis de estado  
     nu = length(u) // número de variáveis de entrada
-    ny = size(yexp,'c') // número de variáveis de saída
-    
+    ny = size(yexp,'r') // número de variáveis de saída
+
+//Variáveis para o EKF    
     sigx    = ones(1,nx)*0.01
     sigx(1,9) = 1e-8
     
@@ -89,21 +103,6 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
     W = eye(nx,nx) // dx/dw - dependencia linear direta
     V = eye(ny,ny) // dy/dv - dependencia linear direta
     
-    yexp = yexp'  //y nlamb x ntexp
-    H = klb'*Hant
-    yteo = H*xmod'//y nlamb x nt
-
-    scf(6); plot(yexp,yteo(:,2:$)) //dimensao 600 x 601
-        xlabel("Absorb exp HPLC", "fontsize", 4);
-        ylabel("Absorb teorica", "fontsize", 4);
-        title('Abs x Abs')
-        
-    scf(8); plot(t(2:$),concexp,'o')
-    scf(8); plot(t,concteo)
-        xlabel("t (min)", "fontsize", 4);
-        ylabel("C (mol/L)", "fontsize", 4);
-        legend(cname)
-        title('C Molar x tempo, teorico e exp')
     
     Xpost = zeros(xmod) // declarando variável
     XpostM = zeros(xmod)// declarando variável
@@ -114,43 +113,47 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
     //xpri = yexp(1,:)' // chutando o próprio dado experimental
     //xpri = [yexp(1,:)'; V0+rand(y(1,nx),'normal')*sig]
     xpri = x0 // chutando o valor real
-   
 
     K = Ppri*H'*pinv(H*Ppri*H'+V*R*V') // H = dely/delx
-    xpost = xpri + K*(yexp(:,ix)-H*xpri) // H*xpri = Klb'Hnovo*xnovo, com termo indep  utilizando como chute o 1o dado exp
+    if t(i)>= texp(ix) then// tenho uma amostra
+        K = Ppri*H'*pinv(H*Ppri*H'+V*R*V')
+        xpost = xpri + K*(yexp(ix,:)'-H*xpri) // x posterior
+        Ppost = (eye(nx,nx)-K*H)*Ppri // covariancia do x posterior
+        ix=ix+1 // indice próxima amostra
+    else  // não tenho amostra
+        xpost = xpri 
+        Ppost = Ppri
+    end
+    //xpost = xpri + K*(yexp(:,ix)-H*xpri) // H*xpri = Klb'Hnovo*xnovo, com termo indep  utilizando como chute o 1o dado exp
     ind   = find(xpost<0) // impede estados negativos
     xpost(ind) = 0
-    ix=2 // indice do proximo dado experimental
-    Ppost = (eye(nx,nx)-K*H)*Ppri // Calc a covariancia do x posterior
     EPx = sqrt(diag(Ppost)) // Erro padrão do estado posterior
     // guardando dados
     Xpost(i,:) = xpost' 
     XpostM(i,:) = xpost'+ 2*EPx' // intervalo de ~95% de confiança
     Xpostm(i,:) = xpost'- 2*EPx'// intervalo de ~95% de confiança
+
+    Ypost(i,:) = Xpost(i,:)*Hant'
+    YpostM(i,:) = XpostM(i,:)*Hant'
+    Ypostm(i,:) = Xpostm(i,:)*Hant'
     
     for i=2:mr //Loop Kalman
         // Time  update
         dt = t(i)-t(i-1)
         x0 = xpost
-//        xpri = ode(x0,t(i-1),t(i),list(eqdif,u,ctevel)) // x prior - estimativa do modelo
-        [lixo,xpri] = modelocin(x0,t(i-1),t(i))
+        [lixo,xpri] = modelocin(x0,t(i-1),t(i),concexp)
         xpri=xpri'         
-        A = jacobiano(x0,t(i-1),t(i),xpri,nx)
+        A = jacobiano(x0,t(i-1),t(i),xpri,nx,concexp)
         Ppri = A*Ppost*A'+W*q*W'// covariancia do x prior
         //Measurement Update
-        if length(texp) >= ix then //evita invalid index
-            if t(i)>= texp(ix) then// tenho uma amostra
-                K = Ppri*H'*pinv(H*Ppri*H'+V*R*V')
-                xpost = xpri + K*(yexp(:,ix)-H*xpri) // H*xpri = Klb'Hnovo*xnovo, com termo indep // x posterior
-                Ppost = (eye(nx,nx)-K*H)*Ppri // covariancia do x posterior
-                ix=ix+1 // indice próxima amostra
-            else  // não tenho amostra
-                xpost = xpri 
-                Ppost = Ppri
-            end
+        if t(i)>= texp(ix) then// tenho uma amostra
+            K = Ppri*H'*pinv(H*Ppri*H'+V*R*V')
+            xpost = xpri + K*(yexp(:,ix)-H*xpri) // H*xpri = Klb'Hnovo*xnovo, com termo indep // x posterior
+            Ppost = (eye(nx,nx)-K*H)*Ppri // covariancia do x posterior
+            ix=ix+1 // indice próxima amostra
         else  // não tenho amostra
-        xpost = xpri 
-        Ppost = Ppri
+            xpost = xpri 
+            Ppost = Ppri
         end
         ind   = find(xpost<0)
         xpost(ind) = 0     
@@ -160,9 +163,9 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
         XpostM(i,:) = xpost'+ 2*EPx'
         Xpostm(i,:) = xpost'- 2*EPx'
         
-//        Ypost(i,:) = Xpost(i,:)*H'
-//        YpostM(i,:) = XpostM(i,:)*H'
-//        Ypostm(i,:) = Xpostm(i,:)*H'
+        Ypost(i,:) = Xpost(i,:)*Hant'
+        YpostM(i,:) = XpostM(i,:)*Hant'
+        Ypostm(i,:) = Xpostm(i,:)*Hant'
 //    end // end aqui plota tudo no final, mais rápido
         // plotando valores preditos pelo filtro
         scf(1)
@@ -184,16 +187,17 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
         plot(t(1:i),Xpost(1:i,$-1),'-')
         plot(t(1:i),Xpostm(1:i,$-1),'--')
         plot(t(1:i),XpostM(1:i,$-1),'--')
+        xlabel("t (min)", "fontsize", 4);
+        ylabel("C (mol/L)", "fontsize", 4);
+        title('C enzima x tempo')
         
-//        scf(6)
-//        plot(t(1:i),Ypost(1:i,1:$),'-')
-//        plot(t(1:i),Ypostm(1:i,1:$),'--')
-//        plot(t(1:i),YpostM(1:i,1:$),'--')
+        scf(6)
+        plot(t(1:i),Ypost(1:i,1:$),'-')
+        plot(t(1:i),Ypostm(1:i,1:$),'--')
+        plot(t(1:i),YpostM(1:i,1:$),'--')
                 
-        
-        
+// inferência em massa   
 //        scf(4)
-
 //        plot(t(1:i),Xpost(1:i,1:ny).*repmat(MM(1:$-1),length(t(1:i)),1),'-r')
 //        plot(t(1:i),Xpostm(1:i,1:ny).*repmat(MM(1:$-1),length(t(1:i)),1),'--')
 //        plot(t(1:i),XpostM(1:i,1:ny).*repmat(MM(1:$-1),length(t(1:i)),1),'--')
