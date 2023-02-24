@@ -69,7 +69,7 @@ function  EKFGOS3(Absor,cname,texp,t,klb,sigy,lambda,concexp)
     yteo = H*xmod'//y nlamb x nt
 
 //Plots para comparar dados do modelo com experimentais
-    scf(10); plot(yexp,yteo(:,2:$)) //dimensao 600 x 601
+    scf(10); plot(yexp,yteo(:,2:$),[-0.035 0.05],[-0.05 0.05]) //dimensao 600 x 601
         xlabel("Absorb exp HPLC", "fontsize", 4);
         ylabel("Absorb teorica", "fontsize", 4);
         title('Abs x Abs')

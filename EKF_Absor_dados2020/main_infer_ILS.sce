@@ -266,7 +266,7 @@ for i=[4] // 1 e 8 estão ruins
 end
 absor0 = [absorlendo(1,:);absor0]
 
-[Absorexp,lambda,x,ifig] = pretrat(absor0,x0,pretreat,analysis) //tem que pretratar essas absorbâncias "medidas"?
+[Absorexp,lambda,x,ifig] = pretrat(absor0,x0,pretreat,analysis) 
 
 pause
 for i = 1:100; close; end;
