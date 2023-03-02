@@ -44,16 +44,17 @@ exec('lib_ekf/modelocin.sci');
     exec('lib_multi/func_pretreatment.sci');
     exec('lib_multi/func_analysis.sci');
     exec('lib_multi/sgolay_filt.sci');
+    atomsLoad('lolimot');
 
 //// Método
-Selecao = 1; // 1 = PLS; 2 = SPA; 3=PCR
+Selecao = 4; // 1 = PLS; 2 = SPA; 3=PCR; 4=Lolimot
 // Para o SPA é necessário dar o primeiro comprimento de onda a ser
 // utilizado, lini.
 optkini = 2; // 0=> lini = lambda(1); 1=> lini = dado abaixo; 2=> otimiza lini.
 lini = 0; // [nm]. Só tem sentido se optkini = 1
 
 //// número máximo de regressores para avaliar na  Validacao Cruzada
-kmax = 15; // está relacionado com os componentes que estão contidos na amostra (não colocar muito )
+kmax = 2; // está relacionado com os componentes que estão contidos na amostra (não colocar muito )
 
 //------------------------------------------------------------------
 //Número de Analitos (colunas no arquivo de concentrações)
@@ -87,7 +88,7 @@ unid = 'M';
 
 x0=[]
 absor0 = []
-for i=[2:5] // 1 e 8 estão ruins
+for i=[2] // 1 e 8 estão ruins
     if i<10 then
         arqent = '0'+string(i)+'.dat'
     else

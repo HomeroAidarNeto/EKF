@@ -28,22 +28,8 @@
 
 clc; clear ; for i = 1:20; close ; end;
 
-exec('lib_multi/func_multi_ILS_new.sci');
-exec('lib_ekf/EKFGOS.sci');
-exec('lib_ekf/modelocin.sci');
-    exec('lib_multi/diffmeu.sci');
-    exec('lib_multi/alisar.sci');
-    exec('lib_multi/pls.sci');
-    exec('lib_multi/spa_clean.sci');
-    exec('lib_multi/spa_model.sci');
-    exec('lib_multi/pls_model.sci');
-    exec('lib_multi/pcr_model.sci');
-    exec('lib_multi/zscore.sci');
-    exec('lib_multi/loess.sci');
-    exec('lib_multi/polyfit.sci');
-    exec('lib_multi/func_pretreatment.sci');
-    exec('lib_multi/func_analysis.sci');
-    exec('lib_multi/sgolay_filt.sci');
+exec('lib_multi/func_multi_ILS.sci');
+
 
 //// Método
 Selecao = 1; // 1 = PLS; 2 = SPA; 3=PCR
@@ -53,16 +39,16 @@ optkini = 2; // 0=> lini = lambda(1); 1=> lini = dado abaixo; 2=> otimiza lini.
 lini = 0; // [nm]. Só tem sentido se optkini = 1
 
 //// número máximo de regressores para avaliar na  Validacao Cruzada
-kmax = 15; // está relacionado com os componentes que estão contidos na amostra (não colocar muito )
+kmax = 7; // está relacionado com os componentes que estão contidos na amostra (não colocar muito )
 
 //------------------------------------------------------------------
 //Número de Analitos (colunas no arquivo de concentrações)
 // -----------------------------------------------------------------
-nc = 7;
+nc = 5;
 //------------------------------------------------------------------
 //Nome dos Analitos e unidade de concentração
 // -----------------------------------------------------------------
-cname = ['di', 'gli', 'gal', 'gos3','gos4','lac','glb'];
+cname = ['di', 'gli', 'gal', 'gos3','gos4'];
 unid = 'M';
 
 // --------------------------------------------------------------
@@ -74,53 +60,13 @@ unid = 'M';
 
 //x0 = fscanfMat('X_Multi_NIRA2020.txt');     
 //absor0 = fscanfMat('Abs_Multi_NIRA2020.txt'); 
-//x0 = fscanfMat('X_Multi_UV2020.txt');     
-//absor0 = fscanfMat('Abs_Multi_UV2020.txt'); 
-//x00 = fscanfMat('X_Multi_UV2019.txt');     
-//absor00 = fscanfMat('Abs_Multi_UV2019.txt');
-////
-//x0 = [x0 ; x00]
-//absor0 = [absor0 ; absor00(2:$,:)] 
-
-
-
-
-x0=[]
-absor0 = []
-for i=[2:5] // 1 e 8 estão ruins
-    if i<10 then
-        arqent = '0'+string(i)+'.dat'
-    else
-        arqent = string(i)+'.dat'
-    end
-    xlendo = fscanfMat('x'+arqent);
-    absorlendo = fscanfMat('abs'+arqent); 
-    x0=[x0;xlendo]
-    absor0=[absor0;absorlendo(2:$,:)]
-end
-absor0 = [absorlendo(1,:);absor0]
-
-
-x0teste = []
-absor0teste = []
-
-// Testar aqui
-//////////////////////////////////////////////////////////
-for i=[3]
-    if i<10 then
-        arqent = '0'+string(i)+'.dat'
-    else
-        arqent = string(i)+'.dat'
-    end
-    xlendo = fscanfMat('x'+arqent);
-    absorlendo = fscanfMat('abs'+arqent); 
-    x0teste=[x0teste;xlendo]
-    absor0teste=[absor0teste;absorlendo(2:$,:)]
-end
-absor0teste = [absorlendo(1,:);absor0teste]
-
-
-dadosteste = {x0teste,absor0teste}
+x0 = fscanfMat('X_Multi_UV2020.txt');     
+absor0 = fscanfMat('Abs_Multi_UV2020.txt'); 
+x00 = fscanfMat('X_Multi_UV2019.txt');     
+absor00 = fscanfMat('Abs_Multi_UV2019.txt');
+//
+x0 = [x0 ; x00]
+absor0 = [absor0 ; absor00(2:$,:)] 
 
 //x0 = fscanfMat('X_Multi_UV2019.txt');     
 //absor0 = fscanfMat('Abs_Multi_UV2019.txt');
@@ -134,27 +80,7 @@ dadosteste = {x0teste,absor0teste}
 //absor0 = fscanfMat('NIR_aj_8.txt'); 
 
 // Fração de dados aleatórios para testes
-frac_test =.1 ; //em geral de 0.0 a 0.4
-
-
-
-// Optimization of the model complexity
-// 1) Validation data constant.
-// Fraction of remaining data used for validation (after test data removal).
-frac_val =.20 ; //usually 0.05-0.4
-OptimModel = {'Val',frac_val}
-// 2) CrossValidation (k-fold): kpart = number of partitions. 
-//    if kpart = -1 then kpart = nd (leave one out - LOOCV)
-kpart = 4;
-OptimModel = {'kfold',kpart}
-
-// 3) Information criteria 
-// Akaike: {'IC','AIC',rho); Baysian: {'IC','BIC'}; Khinchin: {'IC','LILC',rho}; 
-// Final prediction: {'IC','FPE'}; Strutctural risk min: {'IC','SRM',rho1,rho2}
-// rho's are tuned parameters.
-//OptimModel = {'IC','BIC'}
-
-
+frac_test =.0 ; //em geral de 0.0 a 0.4
 
 
 // Set of pretreatment 
@@ -177,7 +103,6 @@ pretreat = list({'SG',9,1,3,0,1},{'Cut',270,470,1});//  todos 2
 pretreat = list({'SG',9,1,2,1,1},{'Cut',270,470,1});// der todos 2
 pretreat = list({'SG',9,1,2,1,1},{'Cut',270,470,1});// der todos 2
 pretreat = list({'MA',6,1,1},{'BLCtr',600,650,0,1},{'Cut',230,470,1});// controle de baseline todos
-pretreat = list({'SG',6,1,3,1,1},{'Cut',270,470,1});// controle de baseline todos
 
 //pretreat = list({'SG',6,1,3,0,1},{'SG',6,1,2,1,1},{'Cut',270,470,1});// der todos 2
 //pretreat = list({'SG',6,1,3,0,1}, {'Deriv',1,1},{'SG',6,1,3,0,1},{'Cut',270,470,1});// der todos 2
@@ -204,28 +129,13 @@ analysis = list({'LB'},{'PCA'});
 //analysis = []
 
 // outlier analysis
-outlier = 1; // 0 = no; 1 = yes.
+outlier = 0; // 0 = no; 1 = yes.
 
 // Gravar Xval para os diferentes número de regressores
-gravarXval = 1; //1 = grava, 0 = não grava
+gravarXval = 0; //1 = grava, 0 = não grava
 
 
 
-[Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,kmax,nc,cname,unid,x0,absor0,frac_test,dadosteste,OptimModel,pretreat,analysis,outlier,gravarXval)
-
-//klb = x\absor
-//t   =[0:1:size(x,'r')-1]'
-//yout = modelocin(t)
-//Absout  = yout*klb
-//
-//[Yp,Ytp,Par_norm] = pls_model(Absout,x,kmax,absor)
-//clf(1); scf(1); plot(yout,Yp)
-//a = zeros(183,201)
-//a(1,:) = absor0(1,270:470)
-//a(2:$,:) = Absout
-//Absout = a
-//
-//xinf0 = yout;     
-//absorinf0 = Absout; 
+flag = func_multi_ILS(Selecao,optkini,lini,kmax,nc,cname,unid,x0,absor0,frac_test,pretreat,analysis,outlier,gravarXval)
 
 
