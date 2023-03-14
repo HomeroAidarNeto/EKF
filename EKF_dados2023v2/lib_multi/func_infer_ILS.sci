@@ -125,6 +125,7 @@ function [Xp,Xinf,Par_norm,absor,x,Xinf_conc,RMSECV] = func_infer_ILS(Selecao,op
     lambda=lambda0;
     x = x0;
     ifig = 1;
+    Par_norm = []
 
     [absor,lambda,x,ifig]=func_pretreatment(pretreat,absor,lambda,x,ifig)
 
@@ -272,7 +273,7 @@ function [Xp,Xinf,Par_norm,absor,x,Xinf_conc,RMSECV] = func_infer_ILS(Selecao,op
             for aux=[1:size(absoraj,'r')]
                 Xp(aux,j)   = lolimot_estim(absoraj(aux,:), modelOut)
             end
-            for aux=[1:size(absortest,'r')]
+            for aux=[1:size(absorinf,'r')]
                 Xinf(aux,j)= lolimot_estim(absoraj(aux,:), modelOut)
             end  
         else

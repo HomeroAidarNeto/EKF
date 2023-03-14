@@ -48,12 +48,12 @@ exec('lib_multi/func_analysis.sci');
 exec('lib_multi/sgolay_filt.sci');
 
 //// Método
-Selecao = 1; // 1 = PLS; 2 = SPA; 3=PCR; 4 = Lolimot
+Selecao = 4; // 1 = PLS; 2 = SPA; 3=PCR; 4 = Lolimot
 optkini = 2; // 0=> lini = lambda(1); 1=> lini = dado abaixo; 2=> otimiza lini.
 lini = 0; // [nm]. Só tem sentido se optkini = 1
 
 //// número de regressores para inferência
-kinf = [4 4 4 4 4 4 4]; //kinf está relacionado com os componentes que estão contidos na amostra (não colocar muito )
+kinf = [5 5 5 5 5 5 5]; //kinf está relacionado com os componentes que estão contidos na amostra (não colocar muito )
 //------------------------------------------------------------------
 //Número de Analitos (colunas no arquivo de concentrações)
 // -----------------------------------------------------------------
