@@ -28,7 +28,7 @@
 
 clc; clear ; for i = 1:20; close ; end;
 
-exec('lib_multi/func_multi_ILS_new.sci');
+exec('lib_multi/func_multi_ILS_new_conjuntos.sci');
 exec('lib_ekf/EKFGOS.sci');
 exec('lib_ekf/modelocin.sci');
     exec('lib_multi/diffmeu.sci');
@@ -72,40 +72,20 @@ unid = 'M';
 // absor = matriz com as absorbancias, sendo a primeira linha o comprimento
 // de onda [nd+1 x nl]
 
-x0=[]
-absor0 = []
-for i=[1:5] 
+//Matriz 3D com todos os dados
+aux = zeros(1,211*7*9);
+xtot = matrix(aux,211,7,9);
+aux = zeros(1,(211+1)*911*9);
+absortot = matrix(aux,(211+1),911,9);
+for i=[1:9] 
     if i<10 then
         arqent = '0'+string(i)+'.dat'
     else
         arqent = string(i)+'.dat'
     end
-    xlendo = fscanfMat('x'+arqent);
-    absorlendo = fscanfMat('abs'+arqent); 
-    x0=[x0;xlendo]
-    absor0=[absor0;absorlendo(2:$,:)]
+    xtot(:,:,i) = fscanfMat('x'+arqent);
+    absortot(:,:,i) = fscanfMat('abs'+arqent); 
 end
-absor0 = [absorlendo(1,:);absor0]
-
-
-x0teste = []
-absor0teste = []
-
-// Testar aqui
-//////////////////////////////////////////////////////////
-for i=[6]
-    if i<10 then
-        arqent = '0'+string(i)+'.dat'
-    else
-        arqent = string(i)+'.dat'
-    end
-    xlendo = fscanfMat('x'+arqent);
-    absorlendo = fscanfMat('abs'+arqent); 
-    x0teste=[x0teste;xlendo]
-    absor0teste=[absor0teste;absorlendo(2:$,:)]
-end
-absor0teste = [absorlendo(1,:);absor0teste]
-dadosteste = {x0teste,absor0teste}
 
 // Fração de dados aleatórios para testes
 frac_test =.1 ; //em geral de 0.0 a 0.4
@@ -151,7 +131,26 @@ outlier = 1; // 0 = no; 1 = yes.
 // Gravar Xval para os diferentes número de regressores
 gravarXval = 0; //1 = grava, 0 = não grava (=1 pode dar erro)
 
-[Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,kmax,nc,cname,unid,x0,absor0,frac_test,dadosteste,OptimModel,pretreat,analysis,outlier,gravarXval)
+for index = [1:9]
+    intervalo=[]
+    for i = [1:9]
+        if i ~= index
+            intervalo = [intervalo,i];
+        end
+    end
+   dadosteste = {xtot(:,:,index),absortot(:,:,index)}
+   
+   x0=[]
+   absor0=[]
+   for i = intervalo
+       x0=[x0;xtot(:,:,i)]
+       absor0=[absor0;absortot(2:$,:,i)]
+   end
+   absor0 = [absortot(1,:,1);absor0]
+   
+for i = 1:20; close ; end;
+    [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new_conjuntos(Selecao,optkini,lini,kmax,nc,cname,unid,x0,absor0,frac_test,dadosteste,OptimModel,pretreat,analysis,outlier,gravarXval,index)
+end
 
 
 

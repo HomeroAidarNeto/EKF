@@ -48,7 +48,7 @@ exec('lib_multi/func_analysis.sci');
 exec('lib_multi/sgolay_filt.sci');
 
 //// Método
-Selecao = 4; // 1 = PLS; 2 = SPA; 3=PCR; 4 = Lolimot
+Selecao = 1; // 1 = PLS; 2 = SPA; 3=PCR; 4 = Lolimot
 optkini = 2; // 0=> lini = lambda(1); 1=> lini = dado abaixo; 2=> otimiza lini.
 lini = 0; // [nm]. Só tem sentido se optkini = 1
 

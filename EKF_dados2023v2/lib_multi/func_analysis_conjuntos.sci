@@ -1,4 +1,4 @@
-function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
+function [absor,lambda,x,ifig]=func_analysis_conjuntos(analysis,absor,lambda,x,ifig)
 
     //==========================================
     //  Initializing Analysis
@@ -33,10 +33,6 @@ function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
                 xlabel=('absor'); ylabel=('absor calculada L-B');
                 title=('ajuste absorbância COM termo idependente'); 
                 xtitle(title,xlabel,ylabel)
-
-                disp('pausa')
-                disp('escreva ''resume'' ou ''abort''');
-                pause; disp('cont.'); disp('')
             end
 
         case 'PCA'then 
@@ -49,19 +45,7 @@ function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
             title = ('Principal Components')
             legend('PC1','PC2','PC3');
             xtitle(title,xlabel,ylabel);
-            
-            kmeansX = [absor*eigvec(:,1),absor*eigvec(:,2)]
-            cores = ['rx','gx','bx','kx','mx']
-            [model,idx] = nan_kmeans(kmeansX,5)
-            
-            for i=[1:5]
-                scf(ifig); plot(kmeansX(idx==i,1),kmeansX(idx==i,2),cores(i));
-            end
-            xlabel = ('PC1');ylabel = ('PC2');
-            title = ('Principal Components')
-            xtitle(title,xlabel,ylabel);
-            ifig=ifig+1;
-            
+
             scf(ifig); plot(absor*eigvec(:,1),absor*eigvec(:,2),'x'); ifig=ifig+1;
             xlabel = ('PC1');ylabel = ('PC2');
             title = ('Principal Components')
@@ -81,9 +65,6 @@ function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
             disp('Explained variance first PCs')
             disp(['PC#','var_relative', 'var_acummulated'])
             disp([[1:maxind]' var_rel(1:maxind) var_ac(1:maxind)] )
-            disp('pausa');
-            disp('escreva ''resume'' ou ''abort''');
-            pause; disp('cont.'); disp('')
         end
     end
 
