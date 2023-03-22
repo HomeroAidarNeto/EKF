@@ -49,19 +49,25 @@ function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
             title = ('Principal Components')
             legend('PC1','PC2','PC3');
             xtitle(title,xlabel,ylabel);
-            
+            //Cluster dos PC 1 e 2
             kmeansX = [absor*eigvec(:,1),absor*eigvec(:,2)]
             cores = ['rx','gx','bx','kx','mx']
-            [model,idx] = nan_kmeans(kmeansX,5)
             
-            for i=[1:5]
-                scf(ifig); plot(kmeansX(idx==i,1),kmeansX(idx==i,2),cores(i));
+            coefsil = -2
+            for aux =[1:size(cores,'c')]
+                [model,idx] = nan_kmeans(kmeansX,aux)
+                for i=[1:aux]
+                    scf(ifig); plot(kmeansX(idx==i,1),kmeansX(idx==i,2),cores(i));
+                end
+                cf = coefsilhueta(kmeansX,idx,aux)
+                disp(cf)
+                if coefsil < cf; coefsil =  cf;  end;
+                xlabel = ('PC1');ylabel = ('PC2');
+                title = ('Principal Components')
+                xtitle(title,xlabel,ylabel);
+                ifig=ifig+1;  
             end
-            xlabel = ('PC1');ylabel = ('PC2');
-            title = ('Principal Components')
-            xtitle(title,xlabel,ylabel);
-            ifig=ifig+1;
-            
+
             scf(ifig); plot(absor*eigvec(:,1),absor*eigvec(:,2),'x'); ifig=ifig+1;
             xlabel = ('PC1');ylabel = ('PC2');
             title = ('Principal Components')

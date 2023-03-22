@@ -43,6 +43,7 @@ exec('lib_ekf/modelocin.sci');
     exec('lib_multi/polyfit.sci');
     exec('lib_multi/func_pretreatment.sci');
     exec('lib_multi/func_analysis.sci');
+    exec('lib_multi/coefsilhueta.sci');
     exec('lib_multi/sgolay_filt.sci');
 
 //// Método
