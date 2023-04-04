@@ -1,4 +1,4 @@
-function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
+function [absor,lambda,x,ifig,noptim,idoptim]=func_analysis(analysis,absor,lambda,x,ifig)
 
     //==========================================
     //  Initializing Analysis
@@ -60,13 +60,14 @@ function [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
                     scf(ifig); plot(kmeansX(idx==i,1),kmeansX(idx==i,2),cores(i));
                 end
                 cf = coefsilhueta(kmeansX,idx,aux)
-                disp(cf)
-                if coefsil < cf; coefsil =  cf;  end;
+                disp('coeficiente de silhueta = '+string(cf))
+                if coefsil < cf; coefsil =  cf; noptim = aux; idoptim = idx; end;
                 xlabel = ('PC1');ylabel = ('PC2');
                 title = ('Principal Components')
                 xtitle(title,xlabel,ylabel);
                 ifig=ifig+1;  
             end
+            disp('número ótimo de clusters = '+string(noptim))
 
             scf(ifig); plot(absor*eigvec(:,1),absor*eigvec(:,2),'x'); ifig=ifig+1;
             xlabel = ('PC1');ylabel = ('PC2');

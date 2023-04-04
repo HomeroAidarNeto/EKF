@@ -1,5 +1,7 @@
 function [silhouette_coefficient] = coefsilhueta(X, idx, k)
-
+    //X é a matriz de dados
+    //idx é o vetor de rótulos (cada ponto pertence a um cluster)
+    //k é o número de clusters
     n = size(X, 1);
     a = zeros(n, 1);  // average distance of a point to its own cluster
     b = zeros(n, k);  // average distance of a point to each other cluster

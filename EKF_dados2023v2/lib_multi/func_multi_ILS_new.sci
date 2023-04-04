@@ -118,7 +118,7 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
 
     [absor,lambda,x,ifig]=func_pretreatment(pretreat,absor,lambda,x,ifig)
 
-    [absor,lambda,x,ifig]=func_analysis(analysis,absor,lambda,x,ifig)
+    [absor,lambda,x,ifig,nclusters,idclusters]=func_analysis(analysis,absor,lambda,x,ifig)
 
     xtest=dadosteste{1}
     if ~isempty(xtest) then
@@ -128,7 +128,7 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
         [absortest,lambdatest,xtest,ifig]=func_pretreatment(pretreat,absortest,lambdatest,xtest,ifig)
     end
     
-    
+    /////////////////////////////////////////////////////////////////////////////////////////////
 
     disp('-----------------------'); disp('  ');
 
@@ -317,6 +317,7 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
         for j=1:nc
             select OptimModel{1}
             case 'Val' then
+                /////////////////
                 select  Selecao
                 case 1 then
                     [Xp(:,j),Xpval(:,j),Par_norm] = pls_model(absoraj,xaj(:,j),k,absorval)
@@ -338,13 +339,16 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
                     disp('Erro - Escolha um algoritmo')
                     return
                 end
+                //////////////
                 RMSECV(k,j)=sqrt(sum((Xpval(:,j)-Xval(:,j)).^2)/nval);
                 RMSEcal(k,j)=sqrt(sum((Xp(:,j)-xaj(:,j)).^2)/ndaj);
 
             case 'kfold' then
                 i1=0
                 naj = 0
+                
                 for i=1:kpart
+                    ////////////////
                     i0 = i1+1
                     i1 = min(i0+npart-1,nd)
                     naj = naj +i1-i0+1
@@ -374,14 +378,15 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
                         disp('Erro - Escolha um algoritmo')
                         return
                     end
+                    ///////////////
                     SEcal(k,j)= SEcal(k,j)+sum((Xp(:,j)-xaj(:,j)).^2);
-
                 end
                 // ajuste com todos para checar teste
                 RMSECV(k,j)=sqrt(sum((Xpval(:,j)-Xval(:,j)).^2)/nd);
                 RMSEcal(k,j)=sqrt(SEcal(k,j)/naj);
                 //        RMSEcal(k,j)=sqrt(SEcal(k,j)/(nd*(nd-1-k))); // desvio padrão de ajuste
             case 'IC' then
+                /////////////////////
                 absoraj = absor;
                 xaj=x;
                 select  Selecao
@@ -401,6 +406,7 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
                     disp('Erro - Escolha um algoritmo')
                     return
                 end
+                //////////////////
                 RMSEcal(k,j)=sqrt(sum((Xp(:,j)-xaj(:,j)).^2)/ndaj);
                 select OptimModel{2}
                 case 'AIC'
@@ -411,6 +417,7 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
 
             if ~isempty(xtest)
                 switch  Selecao
+                /////////////////
                 case 1
                     [Xpp(:,j),Xpt(:,j),Par_norm] = pls_model(absor,x(:,j),k,absortest)
                 case 2
@@ -430,9 +437,10 @@ function [Xp,Xpval,Par_norm,absor,x] = func_multi_ILS_new(Selecao,optkini,lini,k
                     disp('Erro - Escolha um algoritmo')
                     return
                 end
+                /////////////////////////
                 RMSEtest(k,j) = sqrt(sum((Xpt(:,j)-xtest(:,j)).^2)/ntest);
                 RMSEajtest(k,j) = sqrt(sum((Xpp(:,j)-x(:,j)).^2)/nd);
-                //            RMSEajtest(k,j) = sqrt(sum((Xpp(:,j)-x(:,j)).^2)/(nd-k)); //desvio padrão ajuste
+                
                 if OptimModel{1} == 'IC'
                     Xval = x
                     Xpval= Xp
